@@ -2,6 +2,8 @@
 
 import socket
 import select
+import time
+import threading
 
 from helper import (
     draw_on_image,
@@ -11,10 +13,28 @@ from helper import (
 )
 
 
+def receive_data(client_socket):
+    while True:
+        # Check if there are data to receive
+        try:
+            received_image_data = get_image_data(client_socket)
+            compose_image_from_bytes(received_image_data)
+            print("Image received and composed")
+        except BlockingIOError:
+            time.sleep(5)
+
+
+
 def tcp_client(host: str = "127.0.0.1", port: int = 8000):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         # Connect to the server
         client_socket.connect((host, port))
+        client_socket.setblocking(False)
+        
+
+        receive_thread = threading.Thread(target=receive_data, args=(client_socket, ))
+        receive_thread.daemon = True
+        receive_thread.start()
 
         while True:
             message = input("Enter the message you want to put on the picture: ")
@@ -26,12 +46,6 @@ def tcp_client(host: str = "127.0.0.1", port: int = 8000):
             image_data = read_file(output_image)
             client_socket.sendall(image_data)
 
-            # Check if there are data to receive
-            ready_to_read, _, _ = select.select([client_socket], [], [], 0.1)  # Timeout of 0.1 seconds
-            if client_socket in ready_to_read:
-                # Receive image_data
-                image_data = get_image_data(client_socket)
-                compose_image_from_bytes(image_data)
 
 
 if __name__ == "__main__":
