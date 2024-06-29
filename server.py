@@ -42,7 +42,6 @@ def broadcast_message(sender_address, message):
                 client_socket.sendall(message.encode())
             except Exception as e:
                 print(f'Error broadcasting to {client_address}: {e}')
-            
 
 
 def tcp_server(host: str = "127.0.0.1", port: int = 8000):
@@ -59,10 +58,5 @@ def tcp_server(host: str = "127.0.0.1", port: int = 8000):
             client_thread.start()
 
 
-def main():
-    tcp_server()
-
-
-
 if __name__ == "__main__":
-    main()
+    tcp_server()
