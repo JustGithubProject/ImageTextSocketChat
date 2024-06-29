@@ -10,7 +10,6 @@ from PIL import (
     ImageFont
 )
 
-
 def draw_on_image(text: str) -> str:
     """Function for drawing text on an image""" 
     img = Image.open("white.png")
@@ -34,12 +33,9 @@ def draw_on_image(text: str) -> str:
     
     return output_image_name
 
-
-
 def generate_md5_hash(text: str) -> str:
     """Generate md5 hash"""
     return hashlib.md5(text.encode()).hexdigest()
-
 
 def read_file(filename: str) -> bytes:
     """Read bytes from file"""
@@ -47,12 +43,14 @@ def read_file(filename: str) -> bytes:
         image_data = file.read()
     return image_data
 
-
 def compose_image_from_bytes(image_data: bytes) -> None:
-    """Get image from bytes"""
-    with open(f"received_message.png", "wb") as file:
-        file.write(image_data)
-
+    """Save image data to a file"""
+    try:
+        with open("received_message.png", "wb") as file:
+            file.write(image_data)
+        print("Image successfully saved as received_message.png")
+    except Exception as e:
+        print(f"Failed to save image: {e}")
 
 def get_image_data(client_socket: socket.socket) -> bytes:
     """Getting bytes of image with a length prefix"""
