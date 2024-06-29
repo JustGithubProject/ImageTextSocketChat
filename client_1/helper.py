@@ -2,6 +2,7 @@ import hashlib
 import random
 import string
 import socket
+import struct
 
 from PIL import (
     Image, 
@@ -54,12 +55,20 @@ def compose_image_from_bytes(image_data: bytes) -> None:
 
 
 def get_image_data(client_socket: socket.socket) -> bytes:
-    """Getting bytes of image"""
+    """Getting bytes of image with a length prefix"""
+    # First, read the length prefix
+    length_data = client_socket.recv(4)
+    if not length_data:
+        return b""
+    
+    # Unpack the length
+    length = struct.unpack('!I', length_data)[0]
+    
+    # Read the actual data
     image_data = b""
-    while True:
+    while len(image_data) < length:
         chunk = client_socket.recv(4096)
         if not chunk:
             break
         image_data += chunk
     return image_data
-    

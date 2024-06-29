@@ -18,7 +18,9 @@ def handle_client(client_socket: socket.socket, client_address: tuple):
         try:
             # Receive message from client
             image_data = get_image_data(client_socket)
-            
+            if not image_data:
+                break
+            print(f"Received from {client_address}: {image_data[:5]} ")
             # Broadcast to clients
             broadcast_message(client_address, image_data)
 
