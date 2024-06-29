@@ -2,7 +2,12 @@
 
 import socket
 
-from helper import draw_on_image
+from helper import (
+    draw_on_image,
+    get_image_data,
+    read_file,
+    compose_image_from_bytes
+)
 
 
 def tcp_client(host: str = "127.0.0.1", port: int = 8000):
@@ -19,6 +24,13 @@ def tcp_client(host: str = "127.0.0.1", port: int = 8000):
             # Getting the bytes of this image
             image_data = read_file(output_image)
             client_socket.sendall(image_data)
+
+            # Check if there are data to receive
+            ready_to_read, _, _ = select.select([client_socket], [], [], 0.1)  # Timeout of 0.1 seconds
+            if client_socket in ready_to_read:
+                # Receive image_data
+                image_data = get_image_data(client_socket)
+                compose_image_from_bytes(image_data)
 
 
 if __name__ == "__main__":

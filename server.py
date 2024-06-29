@@ -3,6 +3,7 @@
 import socket
 import threading
 
+from helper import get_image_data
 
 # dict to store clients that connected to server
 clients = dict()
@@ -16,14 +17,10 @@ def handle_client(client_socket: socket.socket, client_address: tuple):
     while True:
         try:
             # Receive message from client
-            message = client_socket.recv(1024).decode()
-            if not message:
-                print(f'Client {client_address} disconnected')
-                break
-            print(f"{client_address}: {message}")
-
+            image_data = get_image_data(client_socket)
+            
             # Broadcast to clients
-            broadcast_message(client_address, message)
+            broadcast_message(client_address, image_data)
 
         except Exception as ex:
             print(f'Error handling client {client_address}: {ex}')
@@ -39,7 +36,7 @@ def broadcast_message(sender_address, message):
     for client_address, client_socket in clients.items():
         if client_address != sender_address:
             try:
-                client_socket.sendall(message.encode())
+                client_socket.sendall(message)
             except Exception as e:
                 print(f'Error broadcasting to {client_address}: {e}')
 

@@ -1,6 +1,7 @@
 import hashlib
 import random
 import string
+import socket
 
 from PIL import (
     Image, 
@@ -36,7 +37,7 @@ def draw_on_image(text: str) -> str:
 
 def generate_md5_hash(text: str) -> str:
     """Generate md5 hash"""
-    return hashlib.md5(text).hexdigest()
+    return hashlib.md5(text.encode()).hexdigest()
 
 
 def read_file(filename: str) -> bytes:
@@ -45,4 +46,20 @@ def read_file(filename: str) -> bytes:
         image_data = file.read()
     return image_data
 
+
+def compose_image_from_bytes(image_data: bytes) -> None:
+    """Get image from bytes"""
+    with open(f"received_message.png", "wb") as file:
+        file.write(image_data)
+
+
+def get_image_data(client_socket: socket.socket) -> bytes:
+    """Getting bytes of image"""
+    image_data = b""
+    while True:
+        chunk = client_socket.recv(4096)
+        if not chunk:
+            break
+        image_data += chunk
+    return image_data
     
