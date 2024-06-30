@@ -1,6 +1,7 @@
 import hashlib
 import random
 import string
+import os
 import socket
 import struct
 
@@ -43,28 +44,23 @@ def read_file(filename: str) -> bytes:
         image_data = file.read()
     return image_data
 
-def compose_image_from_bytes(image_data: bytes) -> None:
+def compose_image_from_bytes(path_dir: str, image_data: bytes) -> None:
     """Save image data to a file"""
+
+    base_path = os.path.abspath(".")
+    filename = f"received_message_{random.randint(1, 19999999999999999)}.png"
+    full_path = os.path.join(base_path, filename)
     try:
-        with open("received_message.png", "wb") as file:
+        with open(full_path, "wb") as file:
             file.write(image_data)
         print("Image successfully saved as received_message.png")
     except Exception as e:
         print(f"Failed to save image: {e}")
 
 def get_image_data(client_socket: socket.socket) -> bytes:
-    """Getting bytes of image with a length prefix"""
-    # First, read the length prefix
-    length_data = client_socket.recv(4)
-    if not length_data:
-        return b""
-    
-    # Unpack the length
-    length = struct.unpack('!I', length_data)[0]
-    
-    # Read the actual data
+    """Getting bytes of image"""
     image_data = b""
-    while len(image_data) < length:
+    while True:
         chunk = client_socket.recv(4096)
         if not chunk:
             break

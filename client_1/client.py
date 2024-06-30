@@ -5,54 +5,61 @@ import struct
 from helper import (
     draw_on_image,
     read_file,
+    get_image_data,
+    compose_image_from_bytes
 )
 
-def receive_data(client_socket):
+def handle_messages(connection):
     while True:
-        # Receive the length prefix
-        length_data = client_socket.recv(4)
-        if not length_data:
-            break
-        # Unpack the length
-        length = struct.unpack('!I', length_data)[0]
-
-        # Receive the actual image data
-        received_image_data = b""
-        while len(received_image_data) < length:
-            chunk = client_socket.recv(4096)
-            if not chunk:
+        try:
+            received_image_data = get_image_data(connection)
+            
+            if received_image_data:
+                compose_image_from_bytes(received_image_data)
+                print("Image received and composed")
+            else:
+                connection.close()
                 break
-            received_image_data += chunk
+        except Exception as ex:
+            print(f'Error handling message from server: {e}')
+            connection.close()
+            break
         
-        if len(received_image_data) == length:
-            # Process the received image data
-            compose_image_from_bytes(received_image_data)
-            print("Image received and composed")
-        else:
-            print("Incomplete image data received")
+        
 
-def tcp_client(host: str = "127.0.0.1", port: int = 8000):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-        # Connect to the server
-        client_socket.connect((host, port))
+def client() -> None:
+    """TCP-Client"""
 
-        receive_thread = threading.Thread(target=receive_data, args=(client_socket,))
-        receive_thread.start()
+    SERVER_ADDRESS = '127.0.0.1'
+    SERVER_PORT = 8000
 
+    try:
+        # Instantiate socket and start connection with server
+        client_socket = socket.socket()
+        client_socket.connect((SERVER_ADDRESS, SERVER_PORT))
+        # Create a thread in order to handle messages sent by server
+        threading.Thread(target=handle_messages, args=[client_socket]).start()
+
+        print('Connected to chat!')
+
+        # Read user's input until it quit from chat and close connection
         while True:
-            message = input("Enter the message you want to put on the picture: ")
+            msg = input()
 
-            # Putting a message on an image
-            output_image = draw_on_image(message)
-            
-            # Getting the bytes of this image
-            image_data = read_file(output_image)
+            if msg == 'quit':
+                break
 
-            # Pack the length of the data
-            length = struct.pack('!I', len(image_data))
-            
-            # Send length prefix followed by the actual data
-            client_socket.sendall(length + image_data)
+            output_image_name = draw_on_image(msg)
+            image_data = read_file(output_image_name)
+            client_socket.send(image_data)
+
+        # Close connection with the server
+        client_socket.close()
+
+    except Exception as e:
+        print(f'Error connecting to server socket {e}')
+        client_socket.close()
+
 
 if __name__ == "__main__":
-    tcp_client()
+    client()
