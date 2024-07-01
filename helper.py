@@ -3,34 +3,21 @@ import random
 import string
 import socket
 import struct
+import os
 
-from PIL import (
-    Image, 
-    ImageDraw,
-    ImageFont
-)
+from PIL import Image, ImageDraw, ImageFont
 
 def draw_on_image(text: str) -> str:
     """Function for drawing text on an image""" 
     img = Image.open("white.png")
-
-    # Create an object ImageDraw to draw on the image
     draw = ImageDraw.Draw(img)
-
-    # Font for text
     font = ImageFont.truetype("arial.ttf", 30)
-
-    # coords of the text
     x = (img.width // 2) - 100
     y = img.height // 2
-
     draw.text((x, y), text, fill="black", font=font)
-
-    # Generate hash to call output image
     output_hash = generate_md5_hash(text) + random.choice(string.ascii_letters + string.ascii_uppercase)
     output_image_name = f"message_{output_hash}.png"
     img.save(output_image_name)
-    
     return output_image_name
 
 def generate_md5_hash(text: str) -> str:
@@ -43,25 +30,35 @@ def read_file(filename: str) -> bytes:
         image_data = file.read()
     return image_data
 
-def compose_image_from_bytes(path_dir: str, image_data: bytes) -> None:
-    """Save image data to a file"""
-
-    base_path = os.path.abspath(".")
-    filename = f"received_message_{random.randint(1, 19999999999999999)}.png"
-    full_path = os.path.join(base_path, filename)
+def compose_image_from_bytes(image_data: bytes, path) -> None:
+    """Создание изображения из данных"""
+    # Читаем первые 4 байта для получения длины данных
+    data_length = struct.unpack("!I", image_data[:4])[0]
+    
+    # Оставшиеся байты являются данными изображения
+    image_bytes = image_data[4:data_length+4]
+    
+    # Создаем изображение из байтов
     try:
-        with open(full_path, "wb") as file:
-            file.write(image_data)
-        print("Image successfully saved as received_message.png")
+        with open(path, "wb") as file:
+            file.write(image_bytes)
+        print("Изображение успешно построено")
     except Exception as e:
-        print(f"Failed to save image: {e}")
+        print(f"Ошибка при построении изображения: {e}")
 
 def get_image_data(client_socket: socket.socket) -> bytes:
-    """Getting bytes of image"""
+    """Получение данных изображения"""
     image_data = b""
-    while True:
+    # Читаем первые 4 байта, чтобы получить размер данных
+    data_length_bytes = client_socket.recv(4)
+    if not data_length_bytes:
+        return b""
+    data_length = struct.unpack("!I", data_length_bytes)[0]
+    image_data += data_length_bytes
+    while len(image_data) < data_length:
         chunk = client_socket.recv(4096)
         if not chunk:
             break
         image_data += chunk
+    
     return image_data

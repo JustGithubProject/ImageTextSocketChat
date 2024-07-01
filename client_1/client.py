@@ -1,65 +1,55 @@
 import socket
 import threading
 import struct
+import os
+import random
 
-from helper import (
-    draw_on_image,
-    read_file,
-    get_image_data,
-    compose_image_from_bytes
-)
+from helper import draw_on_image, read_file, get_image_data, compose_image_from_bytes
 
 def handle_messages(connection):
     while True:
         try:
             received_image_data = get_image_data(connection)
-            
+            print(received_image_data[:10])
             if received_image_data:
-                compose_image_from_bytes(received_image_data)
+                print("Can you compose for Client_1?")
+                base_path = os.path.abspath(".")
+                filename = f"received_message_{random.randint(1, 19999999999999999)}.png"
+                full_path = os.path.join(base_path, filename)
+                compose_image_from_bytes(received_image_data, full_path)
                 print("Image received and composed")
             else:
                 connection.close()
                 break
         except Exception as ex:
-            print(f'Error handling message from server: {e}')
+            print(f'Error handling message from server: {ex}')
             connection.close()
             break
-        
-        
 
 def client() -> None:
     """TCP-Client"""
-
     SERVER_ADDRESS = '127.0.0.1'
     SERVER_PORT = 8000
 
     try:
-        # Instantiate socket and start connection with server
         client_socket = socket.socket()
         client_socket.connect((SERVER_ADDRESS, SERVER_PORT))
-        # Create a thread in order to handle messages sent by server
-        threading.Thread(target=handle_messages, args=[client_socket]).start()
-
+        threading.Thread(target=handle_messages, args=(client_socket,)).start()
         print('Connected to chat!')
-
-        # Read user's input until it quit from chat and close connection
+        
         while True:
             msg = input()
-
             if msg == 'quit':
                 break
-
             output_image_name = draw_on_image(msg)
             image_data = read_file(output_image_name)
-            client_socket.send(image_data)
+            data_length = struct.pack("!I", len(image_data))
+            client_socket.sendall(data_length + image_data)
 
-        # Close connection with the server
         client_socket.close()
-
     except Exception as e:
-        print(f'Error connecting to server socket {e}')
+        print(f'Error connecting to server socket: {e}')
         client_socket.close()
-
 
 if __name__ == "__main__":
     client()
