@@ -4,7 +4,13 @@ import struct
 import os
 import random
 
-from helper import draw_on_image, read_file, get_image_data, compose_image_from_bytes
+from helper import (
+    draw_on_image,
+    read_file,
+    get_image_data,
+    compose_image_from_bytes
+)
+
 
 def handle_messages(connection):
     while True:
