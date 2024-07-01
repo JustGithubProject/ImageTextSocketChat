@@ -32,7 +32,7 @@ def handle_messages(connection):
             connection.close()
             break
 
-def client(host: str = "127.0.0.1", port: int = 8000) -> None:
+def client(host: str = "127.0.0.1", port: int = 8000, entry_msg=None) -> None:
     """TCP-Client"""
     try:
         client_socket = socket.socket()

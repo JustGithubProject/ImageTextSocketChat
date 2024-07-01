@@ -32,6 +32,18 @@ def on_focusout_port(event):
         entry_port.config(fg="grey")
 
 
+def on_entry_click_msg(event):
+    if entry_port.get() == "Message: ":
+        entry_port.delete(0, "end")
+        entry_port.insert(0, "")
+        entry_port.config(fg="black")
+
+
+def on_focusout_msg(event):
+    if entry_port.get() == "":
+        entry_port.insert(0, "Message: ")
+        entry_port.config(fg="grey")
+
 # Instance of Tk
 window = tk.Tk()
 
@@ -61,6 +73,18 @@ entry_port.config(fg='grey')
 entry_port.pack(pady=10)
 
 
+# Create an Entry widget for port
+entry_msg = tk.Entry(window, width=40)
+entry_msg.insert(0, placeholder_text_port)
+entry_msg.bind('<FocusIn>', on_entry_click_port)
+entry_msg.bind('<FocusOut>', on_focusout_port)
+entry_msg.config(fg='grey')
+entry_msg.pack(pady=10)
+
+
+# Create an Entry widget for message
+
+
 def connect_to_specified_host_and_port():
     host = entry_host.get()
     port = entry_port.get()
@@ -70,9 +94,9 @@ def connect_to_specified_host_and_port():
         port = ""
 
     if host and port:
-        client(host, int(port))
+        client(host, int(port), entry_msg)
     else:
-        client()
+        client(entry_msg=entry_msg)
 
 # button to connect to host and port
 button = tk.Button(window, text="Connect", command=connect_to_specified_host_and_port)
