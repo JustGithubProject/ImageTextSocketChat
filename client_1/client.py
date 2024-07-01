@@ -32,14 +32,11 @@ def handle_messages(connection):
             connection.close()
             break
 
-def client() -> None:
+def client(host: str = "127.0.0.1", port: int = 8000) -> None:
     """TCP-Client"""
-    SERVER_ADDRESS = '127.0.0.1'
-    SERVER_PORT = 8000
-
     try:
         client_socket = socket.socket()
-        client_socket.connect((SERVER_ADDRESS, SERVER_PORT))
+        client_socket.connect((host, port))
         threading.Thread(target=handle_messages, args=(client_socket,)).start()
         print('Connected to chat!')
         
@@ -57,5 +54,5 @@ def client() -> None:
         print(f'Error connecting to server socket: {e}')
         client_socket.close()
 
-if __name__ == "__main__":
-    client()
+
+# client()
