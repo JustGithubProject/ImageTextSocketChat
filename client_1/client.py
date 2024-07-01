@@ -55,4 +55,4 @@ def client(host: str = "127.0.0.1", port: int = 8000) -> None:
         client_socket.close()
 
 
-# client()
+client()
