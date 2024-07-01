@@ -4,7 +4,7 @@ import time
 
 def test_server_runs():
     try:
-        proc = subprocess.Popen(['python', 'your_server_script.py'])
+        proc = subprocess.Popen(['python', 'server.py'])
         time.sleep(2)
 
         assert proc.poll() is None, "Server script did not start or exited prematurely"
