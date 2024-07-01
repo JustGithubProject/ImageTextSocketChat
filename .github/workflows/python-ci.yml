@@ -26,3 +26,9 @@ jobs:
     - name: Run tests
       run: |
         pytest tests  
+
+    - name: Deploy if tests pass
+      if: success()
+      run: |
+        # Add your deployment steps here
+        echo "Tests passed! Deploying changes..."

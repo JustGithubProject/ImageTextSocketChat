@@ -45,4 +45,4 @@
 
    Replace `client.py` with your actual second client file.
 
-These instructions will help you set up and run a chat socket with images using a server and two clients.
+
