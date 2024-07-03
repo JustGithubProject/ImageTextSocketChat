@@ -26,7 +26,7 @@
     python client.py
     ```
 
-   Replace `client.py` with your actual first client file.
+
 
 ## Creating the Second Client
 
@@ -43,6 +43,6 @@
     python client.py
     ```
 
-   Replace `client.py` with your actual second client file.
+e.
 
 
